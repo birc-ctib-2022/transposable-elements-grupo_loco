@@ -14,6 +14,7 @@ class Genome(ABC):
     def __init__(self, n: int):
         """Create a genome of size n."""
         ...  # not implemented yet
+    
 
     @abstractmethod
     def insert_te(self, pos: int, length: int) -> int:
@@ -30,6 +31,7 @@ class Genome(ABC):
         Returns a new ID for the transposable element.
         """
         ...  # not implemented yet
+    
 
     @abstractmethod
     def copy_te(self, te: int, offset: int) -> int | None:
@@ -91,10 +93,13 @@ class ListGenome(Genome):
 
     Implements the Genome interface using Python's built-in lists
     """
-
     def __init__(self, n: int):
         """Create a new genome with length n."""
         ...  # FIXME
+        self.genome=[-1]*n
+        self.tes = set()
+        self.inactive = set()
+
 
     def insert_te(self, pos: int, length: int) -> int:
         """
@@ -110,7 +115,12 @@ class ListGenome(Genome):
         Returns a new ID for the transposable element.
         """
         ...  # FIXME
-        return -1
+        if self.genome[pos] > -1:
+            self.inactive.add(self.genome[pos])
+            pass # inactivate
+        self.genome[pos:pos] = [len(self.tes)]*length
+        self.tes.add(len(self.tes))
+        
 
     def copy_te(self, te: int, offset: int) -> int | None:
         """
@@ -127,6 +137,17 @@ class ListGenome(Genome):
         If te is not active, return None (and do not copy it).
         """
         ...  # FIXME
+        for elements in self.inactive:
+            if te==elements:
+                return None
+
+        if te>offset:
+            te-=1
+        else:
+            te+=1
+        self.genome[offset]=te
+
+            
 
     def disable_te(self, te: int) -> None:
         """
@@ -137,6 +158,8 @@ class ListGenome(Genome):
         for those.
         """
         ...  # FIXME
+
+        
 
     def active_tes(self) -> list[int]:
         """Get the active TE IDs."""
