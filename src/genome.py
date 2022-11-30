@@ -1,4 +1,8 @@
 """A circular genome for simulating transposable elements."""
+from __future__ import annotations
+from typing import (
+    Generic, TypeVar, Iterable,
+    Callable, Protocol)
 
 from abc import (
     # A tag that says that we can't use this class except by specialising it
@@ -158,18 +162,21 @@ class ListGenome(Genome):
         for those.
         """
         ...  # FIXME
+        self.inactive.add(te)
 
-        
 
     def active_tes(self) -> list[int]:
         """Get the active TE IDs."""
         ...  # FIXME
-        return []
+        for id in self.genome:
+            if self.genome[id]<=-1:
+                return id
 
     def __len__(self) -> int:
         """Current length of the genome."""
         ...  # FIXME
-        return 0
+    
+        return len(self.genome)
 
     def __str__(self) -> str:
         """
@@ -183,7 +190,38 @@ class ListGenome(Genome):
         represented with the character '-', active TEs with 'A', and disabled
         TEs with 'x'.
         """
-        return "FIXME"
+        return f'genome:{self.genome} of inactive transposons: {self.inactive}'
+
+
+
+T = TypeVar('T')
+S = TypeVar('S')
+
+class Link(Generic[T]):
+    """Doubly linked link."""
+
+    val: T
+    prev: Link[T]
+    next: Link[T]
+
+    def __init__(self, val: T, p: Link[T], n: Link[T]):
+        """Create a new link and link up prev and next."""
+        self.val = val
+        self.prev = p
+        self.next = n
+
+
+def insert_after(link: Link[T], val: T) -> None:
+    """Add a new link containing avl after link."""
+    new_link = Link(val, link, link.next)
+    new_link.prev.next = new_link
+    new_link.next.prev = new_link
+
+
+def remove_link(link: Link[T]) -> None:
+    """Remove link from the list."""
+    link.prev.next = link.next
+    link.next.prev = link.prev        
 
 
 class LinkedListGenome(Genome):
@@ -193,9 +231,18 @@ class LinkedListGenome(Genome):
     Implements the Genome interface using linked lists.
     """
 
+
     def __init__(self, n: int):
         """Create a new genome with length n."""
         ...  # FIXME
+        self.head = Link(None, None, None)  # type: ignore
+        self.head.prev = self.head
+        self.head.next = self.head
+        self.inactive=set()
+
+        for _ in range(n):
+            insert_after(self.head,-1)
+       
 
     def insert_te(self, pos: int, length: int) -> int:
         """
@@ -211,6 +258,22 @@ class LinkedListGenome(Genome):
         Returns a new ID for the transposable element.
         """
         ...  # FIXME
+        Churro=self.head
+        count=0
+
+        for ele in Churro:
+            if count>= pos and count<=pos+length:
+                insert_after(Churro,-1)
+                count+=1
+                Churro=Churro.next
+            count+=1
+            Churro=Churro.next
+            
+
+
+
+        
+        
         return -1
 
     def copy_te(self, te: int, offset: int) -> int | None:
