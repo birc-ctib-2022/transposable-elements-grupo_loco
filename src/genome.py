@@ -100,7 +100,7 @@ class ListGenome(Genome):
     def __init__(self, n: int):
         """Create a new genome with length n."""
         ...  # FIXME
-        self.genome=[-1]*n
+        self.genome=['-']*n
         self.tes = set()
         self.inactive = set()
 
@@ -144,7 +144,6 @@ class ListGenome(Genome):
         for elements in self.inactive:
             if te==elements:
                 return None
-
         if te>offset:
             te-=1
         else:
@@ -238,10 +237,12 @@ class LinkedListGenome(Genome):
         self.head = Link(None, None, None)  # type: ignore
         self.head.prev = self.head
         self.head.next = self.head
+
         self.inactive=set()
+        self.tes=set()
 
         for _ in range(n):
-            insert_after(self.head,-1)
+            insert_after(self.head,'-')
        
 
     def insert_te(self, pos: int, length: int) -> int:
@@ -258,23 +259,32 @@ class LinkedListGenome(Genome):
         Returns a new ID for the transposable element.
         """
         ...  # FIXME
+        Curro=self.head
+        Curros=self.head
+        counter=0
+        for points in Curro:
+            if  counter >= pos-1 and counter<=pos+length-1 and points=='-':
+                self.inactive.add(points)
+                remove_link(Curro)
+                counter+=1
+                Curro=Curro.next
+
+
         Churro=self.head
         count=0
+        Churros=self.head
 
         for ele in Churro:
-            if count>= pos and count<=pos+length:
+            if count >= pos-1 and count<=pos+length-1:
                 insert_after(Churro,-1)
                 count+=1
                 Churro=Churro.next
             count+=1
             Churro=Churro.next
-            
-
-
-
-        
-        
-        return -1
+            if Churros==Churro:
+                break
+            else: 
+                return 
 
     def copy_te(self, te: int, offset: int) -> int | None:
         """
@@ -292,6 +302,23 @@ class LinkedListGenome(Genome):
         """
         ...  # FIXME
 
+        Churro=self.head
+        count=0
+        Churros=self.head
+
+        for ele in Churro:
+            if ele==offset:
+                insert_after(Churro,te)
+                break
+            count+=1
+            Churro=Churro.next
+            if Churros==Churro:
+                break
+        
+
+
+
+
     def disable_te(self, te: int) -> None:
         """
         Disable a TE.
@@ -301,6 +328,19 @@ class LinkedListGenome(Genome):
         for those.
         """
         ...  # FIXME
+        #alle n
+
+        for ele in te:
+            ele+1
+        Churro=self.head
+
+        for ele in Churro:
+            if ele<-1:
+                insert_after(self.inactive,ele)
+                
+
+
+
 
     def active_tes(self) -> list[int]:
         """Get the active TE IDs."""
