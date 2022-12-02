@@ -101,10 +101,11 @@ class ListGenome(Genome):
         """Create a new genome with length n."""
         ...  # FIXME
         self.genome=['-']*n
-        self.tes = set()
+        self.tes = {}
         self.inactive = set()
         self.counter=0
 
+    
 
     def insert_te(self, pos: int, length: int) -> int:
         """
@@ -120,14 +121,13 @@ class ListGenome(Genome):
         Returns a new ID for the transposable element.
         """
         ...  # FIXME
-        for elements in range(len(self.genome)):
-            if elements>=pos and elements<=pos*length and self.genome[pos]!='-':
-                self.genome[elements]='x'
-                self.inactive.add(self.genome[elements])
-        
-        self.genome[pos:pos] = [len(self.tes)]*length
-        self.tes.add(len(self.tes))
-        
+  
+        if self.genome[pos] == 'A':
+            self.disable_te(self.tes[pos])
+        self.genome[pos] = 'A'
+        self.tes[pos] = self.counter
+        self.counter += 1
+        return self.counter - 1
 
     def copy_te(self, te: int, offset: int) -> int | None:
         """
@@ -143,24 +143,24 @@ class ListGenome(Genome):
 
         If te is not active, return None (and do not copy it).
         """
-        ...  # FIXME
 
-        for i in range(self.genome):# to find the index id/position of the desired te
-            if i==te:
-                index_ID=i
-                break
-
-        if self.genome[index_ID]=='x':
-            return None
-        
-        counter=0
+        for i in range(len(self.genome)): #find the position of the te
+            if self.tes[i] == te:
+                pos = i #position of the te
+        if pos + offset < 0: #if the offset moves the copy left of index 0
+            pos = len(self.genome) + (pos + offset)
+        elif pos + offset > len(self.genome): #if the offset moves the copy right of the largest index
+            pos = pos + offset - len(self.genome)
+        else:
+            pos = pos + offset
+        if self.genome[pos] == 'A': #if the te collides with an existing te
+            self.disable_te(self.tes[pos])  #disable the te if it is active and add it to the inactive set
+        if te in self.tes.values(): #if te is active   
+            self.genome[pos] = 'A' #copy the te to the new position
+        #if the te collides with an existing te, disable the te and add it to the inactive set
+        #if te is not active, return None (and do not copy it)
+        return self.counter - 1
     
-        for i in self.genome:#to find the length of the te
-            if i==te:
-                counter+=1
-        
-        return self.insert_te(index_ID+offset,counter)# adding the offset since the number need to change accordingly
-      
 
 
             
@@ -174,23 +174,25 @@ class ListGenome(Genome):
         for those.
         """
         ...  # FIXME
-        for i in self.genome:
-            if i==te:
-                self.genome[i]='x'
-        
+        for i in range(len(self.genome)):
+            if self.tes[i] == te:
+                pos = i #position of the te to be disabled
+        if te in self.tes.values(): #if te is active
+            self.genome[pos] = 'x' #disable the te
+            self.inactive.add(te) #add the te to the inactive set
+        else:
+            return None
 
 
     def active_tes(self) -> list[int]:
         """Get the active TE IDs."""
         ...  # FIXME
-        for id in self.genome:
-            if self.genome[id]!='x':
-                return id
+        active = []
+        for i in range(len(self.genome)):
+            if self.genome[i] == 'A':
+                active.append(self.tes[i])
+        return active
 
-    def __len__(self) -> int:
-        """Current length of the genome."""
-        ...  # FIXME
-        return len(self.genome)
 
     def __str__(self) -> str:
         """
@@ -204,7 +206,8 @@ class ListGenome(Genome):
         represented with the character '-', active TEs with 'A', and disabled
         TEs with 'x'.
         """
-        return f'genome:{self.genome} of inactive transposons: {self.inactive}'
+        ...
+        return ''.join(self.genome)
 
 
 
