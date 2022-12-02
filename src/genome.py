@@ -144,21 +144,19 @@ class ListGenome(Genome):
         If te is not active, return None (and do not copy it).
         """
 
-        for i in range(len(self.genome)): #find the position of the te
+        for i in range(len(self.genome)): 
             if self.tes[i] == te:
                 pos = i #position of the te
-        if pos + offset < 0: #if the offset moves the copy left of index 0
+        if pos + offset < 0: 
             pos = len(self.genome) + (pos + offset)
         elif pos + offset > len(self.genome): #if the offset moves the copy right of the largest index
             pos = pos + offset - len(self.genome)
         else:
             pos = pos + offset
         if self.genome[pos] == 'A': #if the te collides with an existing te
-            self.disable_te(self.tes[pos])  #disable the te if it is active and add it to the inactive set
-        if te in self.tes.values(): #if te is active   
-            self.genome[pos] = 'A' #copy the te to the new position
-        #if the te collides with an existing te, disable the te and add it to the inactive set
-        #if te is not active, return None (and do not copy it)
+            self.disable_te(self.tes[pos])  
+        if te in self.tes.values():   
+            self.genome[pos] = 'A'
         return self.counter - 1
     
 
@@ -177,9 +175,9 @@ class ListGenome(Genome):
         for i in range(len(self.genome)):
             if self.tes[i] == te:
                 pos = i #position of the te to be disabled
-        if te in self.tes.values(): #if te is active
-            self.genome[pos] = 'x' #disable the te
-            self.inactive.add(te) #add the te to the inactive set
+        if te in self.tes.values(): 
+            self.genome[pos] = 'x' 
+            self.inactive.add(te) 
         else:
             return None
 
