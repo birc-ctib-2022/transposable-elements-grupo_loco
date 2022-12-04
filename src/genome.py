@@ -104,6 +104,7 @@ class ListGenome(Genome):
         self.tes =set()
         self.counter=1
 
+    
 
     def insert_te(self, pos: int, length: int) -> int:
         """
@@ -185,10 +186,6 @@ class ListGenome(Genome):
         ...  # FIXME
         return list(self.tes)
 
-    def __len__(self) -> int:
-        """Current length of the genome."""
-        ...  # FIXME
-        return len(self.genome)
 
     def __str__(self) -> str:
         """
