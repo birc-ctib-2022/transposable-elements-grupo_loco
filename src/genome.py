@@ -319,13 +319,11 @@ class LinkedListGenome(Genome):
         If te is not active, return None (and do not copy it).
         """
         ...  # FIXME
-        
-        
         if te in self.tes:
             return None
         
         Burro=self.head.next
-        Countings=0
+        Countings=-1
 
         while Burro is not self.head:
             Countings+=1
@@ -333,8 +331,7 @@ class LinkedListGenome(Genome):
         
         Churro=self.head.next
         count=0
-
-        while Churro is not self.head:
+        while Churro is not self.head:#finding the position of the offset, we want to place our copy there
             if count==offset:
                 insert_after(count,(te+offset)%Countings)
                 break
@@ -343,7 +340,6 @@ class LinkedListGenome(Genome):
                 Churro=Churro.next
                 count+=1
 
-    
 
     def disable_te(self, te: int) -> None:
         """
@@ -356,14 +352,12 @@ class LinkedListGenome(Genome):
         ...  # FIXME
         Churro=self.head.next
 
-        while Churro is not:
+        while Churro is not self.head:
             if Churro.val==te:
                 self.tes.remove(te)
-                Churro.val='x'
                 Churro=Churro.next
-            Churro=Churro.next
-            if Churro==self.head.prev:
-                break
+            else:
+                Churro=Churro.next
          
 
     def active_tes(self) -> list[int]:
@@ -374,13 +368,11 @@ class LinkedListGenome(Genome):
     def __len__(self) -> int:
         """Current length of the genome."""
         # FIXME
-        count=0
+        count=-1
         Curro=self.head.next
-        for _ in Curro:
+        while Curro is not self.head:
             count+=1
             Curro=Curro.next
-            if Curro==self.head.prev:
-                break
         return count
 
     def __str__(self) -> str:
@@ -409,8 +401,4 @@ class LinkedListGenome(Genome):
             elif Curro.val>0:
                 string_curro.append('A')
                 Curro=Curro.next
-
-
-           
-        
         return ''.join(string_curro)
