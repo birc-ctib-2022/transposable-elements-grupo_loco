@@ -149,7 +149,7 @@ class ListGenome(Genome):
         ...  # FIXME
         
         counter0=0
-        while self.genome:#Getting the pos of the te
+        for i in self.genome:#Getting the pos of the te
             if i==te:
                 break
             else:
@@ -187,6 +187,9 @@ class ListGenome(Genome):
         ...  # FIXME
         return list(self.tes)
 
+    def __len__(self) -> int:
+        """Current length of the genome."""
+        return len(self.genome)
 
     def __str__(self) -> str:
         """
