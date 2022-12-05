@@ -1,4 +1,8 @@
 """A circular genome for simulating transposable elements."""
+from __future__ import annotations
+from typing import (
+    Generic, TypeVar, Iterable,
+    Callable, Protocol)
 
 from abc import (
     # A tag that says that we can't use this class except by specialising it
@@ -14,6 +18,7 @@ class Genome(ABC):
     def __init__(self, n: int):
         """Create a genome of size n."""
         ...  # not implemented yet
+    
 
     @abstractmethod
     def insert_te(self, pos: int, length: int) -> int:
@@ -30,6 +35,7 @@ class Genome(ABC):
         Returns a new ID for the transposable element.
         """
         ...  # not implemented yet
+    
 
     @abstractmethod
     def copy_te(self, te: int, offset: int) -> int | None:
@@ -91,10 +97,14 @@ class ListGenome(Genome):
 
     Implements the Genome interface using Python's built-in lists
     """
-
     def __init__(self, n: int):
         """Create a new genome with length n."""
         ...  # FIXME
+        self.genome=[0]*n
+        self.tes =set()
+        self.counter=1
+
+    
 
     def insert_te(self, pos: int, length: int) -> int:
         """
@@ -110,7 +120,17 @@ class ListGenome(Genome):
         Returns a new ID for the transposable element.
         """
         ...  # FIXME
-        return -1
+        if self.genome[pos] in self.tes:
+            self.tes.remove(self.genome[pos])
+
+        te=self.counter
+        self.tes.add(te)
+        self.counter+=1
+        self.genome[pos:pos] = [te]*length
+
+        return te
+        
+
 
     def copy_te(self, te: int, offset: int) -> int | None:
         """
@@ -127,6 +147,26 @@ class ListGenome(Genome):
         If te is not active, return None (and do not copy it).
         """
         ...  # FIXME
+        
+        counter0=0
+        for i in self.genome:#Getting the pos of the te
+            if i==te:
+                break
+            else:
+                counter0+=1
+        
+        if te not in self.tes:
+            return None
+        counter=0
+        for i in self.genome:#to find the length of the te
+            if i==te:
+                counter+=1
+        return self.insert_te((counter0+offset)%len(self.genome),counter) # adding the offset since the number need to change accordingly
+        #the Modulos is so it will wrap around.
+      
+
+
+            
 
     def disable_te(self, te: int) -> None:
         """
@@ -137,16 +177,19 @@ class ListGenome(Genome):
         for those.
         """
         ...  # FIXME
+    
+        if te in self.tes:
+            self.tes.remove(te)
+    
 
     def active_tes(self) -> list[int]:
         """Get the active TE IDs."""
         ...  # FIXME
-        return []
+        return list(self.tes)
 
     def __len__(self) -> int:
         """Current length of the genome."""
-        ...  # FIXME
-        return 0
+        return len(self.genome)
 
     def __str__(self) -> str:
         """
@@ -160,7 +203,44 @@ class ListGenome(Genome):
         represented with the character '-', active TEs with 'A', and disabled
         TEs with 'x'.
         """
-        return "FIXME"
+        return ''.join("-" if nuc==0 else "A" if nuc in self.tes else "x"
+                        for nuc in self.genome)
+
+
+T = TypeVar('T')
+S = TypeVar('S')
+
+class Link(Generic[T]):
+    """Doubly linked link."""
+
+    val: T
+    prev: Link[T]
+    next: Link[T]
+
+    def __init__(self, val: T, p: Link[T], n: Link[T]):
+        """Create a new link and link up prev and next."""
+        self.val = val
+        self.prev = p
+        self.next = n
+
+
+def insert_after(link: Link[T], val: T) -> None:
+    """Add a new link containing avl after link."""
+    new_link = Link(val, link, link.next)
+    new_link.prev.next = new_link
+    new_link.next.prev = new_link
+
+def insert_before(link: Link[T], val: T) -> None:
+    """Add a new link before containing avl of link."""
+    new_link = Link(val, link.prev, link)
+    new_link.prev.next = new_link
+    new_link.next.prev = new_link
+
+
+def remove_link(link: Link[T]) -> None:
+    """Remove link from the list."""
+    link.prev.next = link.next
+    link.next.prev = link.prev        
 
 
 class LinkedListGenome(Genome):
@@ -170,9 +250,20 @@ class LinkedListGenome(Genome):
     Implements the Genome interface using linked lists.
     """
 
+
     def __init__(self, n: int):
         """Create a new genome with length n."""
         ...  # FIXME
+        self.head = Link(None, None, None)  # type: ignore
+        self.head.prev = self.head
+        self.head.next = self.head
+        self.counter = 1
+
+        self.tes=set()
+
+        for _ in range(n):
+            insert_after(self.head,0)
+       
 
     def insert_te(self, pos: int, length: int) -> int:
         """
@@ -188,7 +279,36 @@ class LinkedListGenome(Genome):
         Returns a new ID for the transposable element.
         """
         ...  # FIXME
-        return -1
+        Curro=self.head.next
+        counter=0
+        while Curro is not self.head:
+            if  counter==pos and Curro.val>0:
+                self.tes.remove(Curro.val)
+                break
+            counter+=1
+            Curro=Curro.next
+
+        te=self.counter
+        self.tes.add(te)
+        self.counter+=1
+        Churro=self.head.next
+
+        if pos==0:
+            for _ in range(length):
+                insert_before(Churro,te)
+
+        count=1
+        while Churro is not self.head:#this one we insert the genome from pos until pos+length
+            if count == pos:
+                for _ in range(length):
+                    insert_after(Churro, te)
+                break
+
+            else:
+                count+=1
+                Churro=Churro.next
+
+        return te
 
     def copy_te(self, te: int, offset: int) -> int | None:
         """
@@ -205,6 +325,39 @@ class LinkedListGenome(Genome):
         If te is not active, return None (and do not copy it).
         """
         ...  # FIXME
+        if te not in self.tes:
+            return None
+        
+        Burro=self.head.next
+        Countings=0
+        while Burro is not self.head:#Length of the Genome
+            Countings+=1
+            Burro=Burro.next
+        
+        #the Length of the Offset=length of te
+        Churro=self.head.next
+        Counter_offset_length=0
+        while Churro is not self.head:
+            if Churro.val==te:
+                Counter_offset_length+=1
+                Churro=Churro.next
+            else:
+                Churro=Churro.next
+
+        Index_te=0
+        Murro=self.head.next
+        while Murro is not self.head:#position of the te
+            if Murro.val==te:
+                break
+            else:
+                Index_te+=1
+                Murro=Murro.next
+
+        return self.insert_te((Index_te+offset)%Countings, Counter_offset_length)
+
+    
+        
+        
 
     def disable_te(self, te: int) -> None:
         """
@@ -215,16 +368,26 @@ class LinkedListGenome(Genome):
         for those.
         """
         ...  # FIXME
+    
+        if te in self.tes:
+            self.tes.remove(te)
+        
+         
 
     def active_tes(self) -> list[int]:
         """Get the active TE IDs."""
         # FIXME
-        return []
+        return list(self.tes)
 
     def __len__(self) -> int:
         """Current length of the genome."""
         # FIXME
-        return 0
+        count=-1
+        Curro=self.head.next
+        while Curro is not self.head:
+            count+=1
+            Curro=Curro.next
+        return count
 
     def __str__(self) -> str:
         """
@@ -238,4 +401,18 @@ class LinkedListGenome(Genome):
         represented with the character '-', active TEs with 'A', and disabled
         TEs with 'x'.
         """
-        return "FIXME"
+        string_curro = []
+        Curro = self.head.next
+        while Curro is not self.head:
+            if Curro.val==0:
+                string_curro.append('-')
+                Curro=Curro.next
+
+            elif Curro.val>0 and Curro.val not in self.tes:
+                string_curro.append('x')
+                Curro=Curro.next
+
+            elif Curro.val>0:
+                string_curro.append('A')
+                Curro=Curro.next
+        return ''.join(string_curro)

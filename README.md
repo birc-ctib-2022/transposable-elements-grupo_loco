@@ -102,4 +102,48 @@ When you have implemented the two (or more) classes, describe the complexity of 
 
 **FIXME: OPERATION COMPLEXITY**
 
+Complexity of list genome:
+- init:
+    Here we create a genome of size n, thus O(n) complexity, we create a set of TEs, and the counter which are both created in constant time  O(1).
+- insert_te:
+    First we see if genome[pos] is in self.tes, searching for genome[pos] is O(1), and the same for running through self.tes.
+    Inserting is O(n) since we run through the entire genome to find position and insert the given sequence at position.
+
+- copy:
+    When searching for the te element worst case is O(n) and we add the copying, for which we copy the te sequence giving O(1).
+
+- disable:
+    We just run through self.tes thus O(1)
+
+-   active_tes:
+    Again just searching for tes O(1)
+
+- __len__:
+    Counting all genome elements O(n).
+
+- __str__:
+    Here we run through and anotate for the entire genome, thus O(n) for running through entire genome.
+
+Complexity of linked list genome:
+- init:
+    Here we run through all the genome thus O(n) complexity.
+
+- insert_te:
+    Worst case run through entire genome O(n), hereafter to add the te we search again, yielding O(n) plus inserting wich is O(1). Totally yielding O(n) + O(n) + O(1) ~ 2*O(n)
+
+- copy_te:
+    First we count O(n), then we search which worst case is O(n) and we measure length of te by also searching which gives O(n) + O(1). Finally we insert which is also O(n). Thus everything combined O(n) + O(n) + O(n) + O(n) ~ 4*O(n)
+
+- disable:
+    Is the same as list O(1)
+
+- active:
+    This is also just the TEs O(1)
+
+- __len__:
+    Counting all genome elements O(n).
+
+- __str__:
+    Here we loop through all of the genome, appending every element, thus resulting in complexity O(1)*O(n) ~ O(n).
+
 In `src/simulate.py` you will find a program that can run simulations and tell you actual time it takes to simulate with different implementations. You can use it to test your analysis. You can modify the parameters to the simulator if you want to explore how they affect the running time.
