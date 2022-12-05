@@ -147,15 +147,16 @@ class ListGenome(Genome):
         If te is not active, return None (and do not copy it).
         """
         ...  # FIXME
-        counter0=-1
-        for i in self.genome:
-            counter0+=1
+        
+        counter0=0
+        while self.genome:#Getting the pos of the te
             if i==te:
                 break
-
+            else:
+                counter0+=1
+        
         if te not in self.tes:
             return None
-
         counter=0
         for i in self.genome:#to find the length of the te
             if i==te:
@@ -276,32 +277,34 @@ class LinkedListGenome(Genome):
         """
         ...  # FIXME
         Curro=self.head.next
-        counter=-1
-
+        counter=0
         while Curro is not self.head:
             if  counter==pos and Curro.val>0:
                 self.tes.remove(Curro.val)
-                counter+=1
                 break
             counter+=1
             Curro=Curro.next
 
         te=self.counter
         self.tes.add(te)
-        
         self.counter+=1
-
         Churro=self.head.next
+
+        if pos==0:
+            for _ in range(length):
+                insert_before(Churro,te)
+
         count=1
         while Churro is not self.head:#this one we insert the genome from pos until pos+length
-            if count >= pos and count<pos+length:
-                insert_after(Churro, te)
-                count+=1
-                Churro=Churro.next
+            if count == pos:
+                for _ in range(length):
+                    insert_after(Churro, te)
+                break
+
             else:
                 count+=1
                 Churro=Churro.next
-        
+
         return te
 
     def copy_te(self, te: int, offset: int) -> int | None:
@@ -319,27 +322,39 @@ class LinkedListGenome(Genome):
         If te is not active, return None (and do not copy it).
         """
         ...  # FIXME
-        if te in self.tes:
+        if te not in self.tes:
             return None
         
         Burro=self.head.next
-        Countings=-1
-
-        while Burro is not self.head:
+        Countings=0
+        while Burro is not self.head:#Length of the Genome
             Countings+=1
             Burro=Burro.next
         
+        #the Length of the Offset=length of te
         Churro=self.head.next
-        count=0
-        while Churro is not self.head:#finding the position of the offset, we want to place our copy there
-            if count==offset:
-                insert_after(count,(te+offset)%Countings)
-                break
-    
+        Counter_offset_length=0
+        while Churro is not self.head:
+            if Churro.val==te:
+                Counter_offset_length+=1
+                Churro=Churro.next
             else:
                 Churro=Churro.next
-                count+=1
 
+        Index_te=0
+        Murro=self.head.next
+        while Murro is not self.head:#position of the te
+            if Murro.val==te:
+                break
+            else:
+                Index_te+=1
+                Murro=Murro.next
+
+        return self.insert_te((Index_te+offset)%Countings, Counter_offset_length)
+
+    
+        
+        
 
     def disable_te(self, te: int) -> None:
         """
@@ -350,14 +365,10 @@ class LinkedListGenome(Genome):
         for those.
         """
         ...  # FIXME
-        Churro=self.head.next
-
-        while Churro is not self.head:
-            if Churro.val==te:
-                self.tes.remove(te)
-                Churro=Churro.next
-            else:
-                Churro=Churro.next
+    
+        if te in self.tes:
+            self.tes.remove(te)
+        
          
 
     def active_tes(self) -> list[int]:
